@@ -190,7 +190,7 @@ label{display:grid;gap:6px;font-size:.82rem;font-weight:700;color:var(--muted)}
 
   function showError(msg){var e=$('error');e.textContent=msg||'';e.hidden=!msg;var d=$('dlgError');d.textContent=msg||'';d.hidden=!msg}
   function api(method,body){
-    var opts={method:method,headers:{'x-app-password':''}};
+    var opts={method:method,headers:{}};
     if(body){opts.headers['Content-Type']='application/json';opts.body=JSON.stringify(body)}
     var ctl=window.AbortController?new AbortController():null,timer=null;
     if(ctl){opts.signal=ctl.signal;timer=setTimeout(function(){ctl.abort()},25000)}
@@ -203,8 +203,14 @@ label{display:grid;gap:6px;font-size:.82rem;font-weight:700;color:var(--muted)}
       });
     });
   }
+  // Tolerate tasks saved in the old { id, text, ... } shape.
+  function normalize(t){
+    return {id:t.id,title:t.title!==undefined?String(t.title):String(t.text||''),
+      description:t.description||'',date:t.date||'',time:t.time||'',
+      done:!!t.done,createdAt:t.createdAt||''};
+  }
   function apply(data){
-    tasks=Array.isArray(data.tasks)?data.tasks:[];
+    tasks=Array.isArray(data.tasks)?data.tasks.map(normalize):[];
     showError('');render();
   }
   function run(body){
@@ -296,7 +302,7 @@ label{display:grid;gap:6px;font-size:.82rem;font-weight:700;color:var(--muted)}
       chk.appendChild(svg('M5 12.5l4.5 4.5L19 7.5'));
       chk.onclick=function(){run({action:'toggle',id:t.id})};
       head.appendChild(chk);
-      head.appendChild(el('h3','title',t.title));
+      head.appendChild(el('h3','title',t.title||''));
       var stamp=[];
       if(t.date&&!dayFilter)stamp.push(fmtDate(t.date));
       if(t.time)stamp.push(fmtTime(t.time));
