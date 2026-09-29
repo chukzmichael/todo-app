@@ -203,7 +203,7 @@
   <div class="panel"><ul id="list"></ul></div>
 
   <footer>
-    <p id="status" role="status" aria-live="polite">Loading tasks…</p>
+    <p id="status" role="status" aria-live="polite"></p>
     <button id="clear-done" type="button" hidden>Clear completed</button>
   </footer>
 </main>
@@ -224,8 +224,14 @@
   function canEdit() { return !state.writeProtected || Boolean(state.password); }
 
   function setStatus(message, isError) {
+    // Only surface problems — routine "saved" confirmations stay silent.
+    if (!isError) {
+      statusEl.textContent = "";
+      statusEl.className = "";
+      return;
+    }
     statusEl.textContent = message;
-    statusEl.className = isError ? "error" : "";
+    statusEl.className = "error";
   }
 
   async function request(method, payload) {
